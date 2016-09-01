@@ -8,51 +8,30 @@
 
 #import "XKAFilterViewController.h"
 #import "XKAFilterManger.h"
-#define imagName  @"img.jpg"
-@interface XKAFilterViewController ()<UITextFieldDelegate>
-@property (weak, nonatomic) IBOutlet UITextField *row11;
-@property (weak, nonatomic) IBOutlet UITextField *row12;
+#import "ColorMatrix.h"
+#define imagName  @"dog.jpg"
+@interface XKAFilterViewController ()<UIAlertViewDelegate>
 
-@property (weak, nonatomic) IBOutlet UITextField *row13;
+/*ImageView*/
+@property (strong, nonatomic) UIImageView *currentImageView;
 
-@property (weak, nonatomic) IBOutlet UITextField *row14;
+/*segment*/
+@property (strong, nonatomic) UISegmentedControl   *segment;
 
-@property (weak, nonatomic) IBOutlet UITextField *row15;
+/*scrollerView  Image*/
+@property (strong, nonatomic) UIScrollView *scrollerView;
 
-@property (weak, nonatomic) IBOutlet UITextField *row21;
+/*redLine  ImageView*/
+@property (strong, nonatomic) UIImageView *redlineImageView;
 
-@property (weak, nonatomic) IBOutlet UITextField *row22;
 
-@property (weak, nonatomic) IBOutlet UITextField *row23;
+/*filterImage*/
+@property (strong, nonatomic) UIImage *currentImage;
+/*nameArray*/
+@property (strong, nonatomic) NSArray *nameArray;
 
-@property (weak, nonatomic) IBOutlet UITextField *row24;
 
-@property (weak, nonatomic) IBOutlet UITextField *row25;
 
-@property (weak, nonatomic) IBOutlet UITextField *row31;
-
-@property (weak, nonatomic) IBOutlet UITextField *row32;
-
-@property (weak, nonatomic) IBOutlet UITextField *row33;
-
-@property (weak, nonatomic) IBOutlet UITextField *row34;
-
-@property (weak, nonatomic) IBOutlet UITextField *row35;
-
-@property (weak, nonatomic) IBOutlet UITextField *row41;
-
-@property (weak, nonatomic) IBOutlet UITextField *row42;
-
-@property (weak, nonatomic) IBOutlet UITextField *row43;
-
-@property (weak, nonatomic) IBOutlet UITextField *row44;
-
-@property (weak, nonatomic) IBOutlet UITextField *row45;
-
-@property (weak, nonatomic) IBOutlet UIImageView *currentImageView;
-@property (weak, nonatomic) IBOutlet UIImageView *curr;
-
-@property (nonatomic,strong)NSArray * itemsArr;
 
 @end
 
@@ -61,127 +40,240 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    _itemsArr = @[_row11,_row12,_row13,_row14,_row15,
-                  _row21,_row22,_row23,_row24,_row25,
-                  _row31,_row32,_row33,_row34,_row35,
-                  _row41,_row42,_row43,_row44,_row45
-                  ];
-
-    for (UITextField *field in _itemsArr) {
-        
-        field.delegate = self;
-        
-        field.layer.cornerRadius = 5;
-        field.layer.borderColor = [UIColor blackColor].CGColor;
-        field.layer.masksToBounds = YES;
-        field.layer.borderWidth = 1.0;
-        field.keyboardType = UIKeyboardTypeNumbersAndPunctuation;
-        
-    }
+    self.title = @"滤镜";
     
+    _currentImageView = [[UIImageView alloc]initWithFrame:(CGRectMake(0, 64, self.view.frame.size.width, self.view.frame.size.height))];
+    _currentImageView.backgroundColor = [UIColor redColor];
+
     _currentImageView.image = [UIImage imageNamed:imagName];
     
-    _currentImageView.contentMode = UIViewContentModeScaleAspectFill;
+    _currentImageView.contentMode = UIViewContentModeScaleToFill;
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showImage) name:UITextFieldTextDidChangeNotification object:nil];
+    [self.view addSubview:_currentImageView];
+    
+        self.nameArray = [NSArray arrayWithObjects:@"原图",@"LOMO",@"黑白",@"复古",@"哥特",@"锐色",@"淡雅",@"酒红",@"青柠",@"浪漫",@"光晕",@"蓝调",@"梦幻",@"夜色",@"红",@"绿",@"蓝", nil];
+    
+    self.segment = [[UISegmentedControl alloc]initWithItems:self.nameArray];
+    self.segment.segmentedControlStyle = UISegmentedControlStyleBar;//样式
+    //    seg.momentary = YES;//点击后恢复原样
+    self.segment.backgroundColor = [UIColor whiteColor];
+    self.segment.frame = CGRectMake(0, 50, 640, 30);
+    self.segment.tintColor = [UIColor blackColor];
 
-}
-- (void)showImage{
+    self.segment.userInteractionEnabled = YES;//关闭用户交互
     
     
-    float p[20];
+    self.scrollerView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, CGRectGetMaxY(self.view.frame) - 100, self.view.frame.size.width, 100)];
+    self.scrollerView.backgroundColor = [UIColor clearColor];
+    self.scrollerView.indicatorStyle = UIScrollViewIndicatorStyleBlack;//滚动条样式
+    self.scrollerView.showsHorizontalScrollIndicator = YES;
+    //显示横向滚动条
+    self.scrollerView.showsVerticalScrollIndicator = NO;//关闭纵向滚动条
+    self.scrollerView.bounces = NO;//取消反弹效果
+    self.scrollerView.pagingEnabled = YES;//划一屏
+    self.scrollerView.contentSize = CGSizeMake(640, 30);
     
-    for (NSInteger i=0; i<_itemsArr.count; i++) {
+    for(int i=0;i<14;i++)
+    {
+        UIImageView *bgImageView = [[UIImageView alloc]initWithFrame:CGRectMake(10.3+46*i, 10, 25, 30)];
+        UIImage *bgImage = [UIImage imageNamed:[NSString stringWithFormat:@"%d.png",i]];
+        bgImageView.image = bgImage;
+//        [self.scrollerView addSubview:bgImageView];
+
         
-        UITextField *textFiled = _itemsArr[i];
-        
-        
-        if (textFiled.text.length>0) {
-            
-            p[i] = textFiled.text.floatValue;
-        }else{
-            
-            p[i] = 0.0f;
-        }
     }
     
+    [self.view addSubview:_scrollerView];
     
+    [self.scrollerView addSubview:_segment];
+    [_segment addTarget:self action:@selector(changeImage:) forControlEvents:UIControlEventValueChanged];
+
+
+//    self.redlineImageView = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 45, 50)];
+//
+//    self.redlineImageView.image = [UIImage imageNamed:@"110.png"];
+//    [self.scrollerView addSubview:_redlineImageView];
+
+   
+}
+-(void)changeImage:(UISegmentedControl *)segment {
+
+    XKAFilterManger *manager = [XKAFilterManger new];
+
+    self.currentImage = [UIImage imageNamed:imagName];
+    self.title = self.nameArray[segment.selectedSegmentIndex];
+    if (_currentImageView.image == nil) {
+        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"提示" message:@"请选择图片" delegate:self cancelButtonTitle:@"关闭" otherButtonTitles:nil, nil];
+        [alert show];
+    }else  {
+        
+        switch (segment.selectedSegmentIndex) {
+            case 0:
+            {
+                _currentImageView.image = self.currentImage;
+
+            }
+                break;
+            case 1:
+            {
+                 _currentImageView.image = [manager createImageWithImagePi:_currentImage andColorMatrix:colormatrix_lomo];
+
+            }
+                break;
+            case 2:
+            {
+                  _currentImageView.image = [manager createImageWithImagePi:_currentImage andColorMatrix:colormatrix_heibai];
+
+            }
+                break;
+            case 3:
+            {
+                  _currentImageView.image = [manager createImageWithImagePi:_currentImage andColorMatrix:colormatrix_huajiu];
+                
+            }
+                break;
+            case 4:
+            {
+                  _currentImageView.image = [manager createImageWithImagePi:_currentImage andColorMatrix:colormatrix_gete];
+            }
+                break;
+            case 5:
+            {
+                  _currentImageView.image = [manager createImageWithImagePi:_currentImage andColorMatrix:colormatrix_ruise];
+                
+            }
+                break;
+            case 6:
+            {
+                  _currentImageView.image = [manager createImageWithImagePi:_currentImage andColorMatrix:colormatrix_danya];
+
+            }
+                break;
+            case 7:
+            {
+                  _currentImageView.image = [manager createImageWithImagePi:_currentImage andColorMatrix:colormatrix_jiuhong];
+
+            }
+                break;
+            case 8:
+            {
+                  _currentImageView.image = [manager createImageWithImagePi:_currentImage andColorMatrix:colormatrix_qingning];
+
+            }
+                break;
+            case 9:
+            {
+                  _currentImageView.image = [manager createImageWithImagePi:_currentImage andColorMatrix:colormatrix_langman];
+
+            }
+                break;
+            case 10:
+            {
+                  _currentImageView.image = [manager createImageWithImagePi:_currentImage andColorMatrix:colormatrix_guangyun];
+
+            }
+                break;
+            case 11:
+            {
+                  _currentImageView.image = [manager createImageWithImagePi:_currentImage andColorMatrix:colormatrix_landiao];
+
+            }
+                break;
+            case 12:
+            {
+                  _currentImageView.image = [manager createImageWithImagePi:_currentImage andColorMatrix:colormatrix_menghuan];
+
+            }
+                break;
+            case 13:
+            {
+                  _currentImageView.image = [manager createImageWithImagePi:_currentImage andColorMatrix:colormatrix_yese];
+
+            }
+                break;
+            case 14:
+            {
+                _currentImageView.image = [manager createImageWithImagePi:_currentImage andColorMatrix:colormatrix_red];
+
+            }
+                break;
+            case 15:
+            {
+                _currentImageView.image = [manager createImageWithImagePi:_currentImage andColorMatrix:colormatrix_GREEN];
+
+            }
+                break;
+            case 16:
+            {
+                _currentImageView.image = [manager createImageWithImagePi:_currentImage andColorMatrix:colormatrix_BLUE];
+            }
+            default:
+                break;
+        }
+        
+    }
     
-    
-    
-    
- XKAFilterManger *manager = [XKAFilterManger new];
-    
-    _currentImageView.image = [manager createImageWithImagePi:[UIImage imageNamed:imagName] andColorMatrix:p];
-    
+
+
 }
 
 - (IBAction)btnClick:(id)sender {
     
     
-    UIImageWriteToSavedPhotosAlbum(_currentImageView.image, nil, nil, nil);
+    XKAFilterManger *manager = [XKAFilterManger new];
     
+    _currentImageView.image = [manager createImageWithImagePi:[UIImage imageNamed:imagName] andColorMatrix:colormatrix_menghuan];
     
-    float p[20];
-    printf("//\nconst float colormatrix_[] = {\n");
-    for (NSInteger i=0; i<_itemsArr.count; i++) {
-        
-        UITextField *textFiled = _itemsArr[i];
-        
-        if (textFiled.text.length>0) {
-            
-            p[i] = textFiled.text.floatValue;
-            
-            NSLog(@"像素 === %f",p[i]);
-            
-        }else{
-            
-            p[i] = 0.0f;
-        }
-        
-        
-        
-        if (i==19) {
-            
-            printf(" %.2f",p[i]);
-        }else{
-            printf(" %.2f,",p[i]);
-        }
-        
-        if ((i+1)%5==0) {
-            if (i!=19) {
-                printf("\n");
-                
-            }else{
-                
-            }
-            
-        }
-        
-    }
-    printf("\n};");
-    
+
+//    
+//    
+//    UIImageWriteToSavedPhotosAlbum(_currentImageView.image, nil, nil, nil);
+//    
+//    
+//    float p[20];
+//    printf("//\nconst float colormatrix_[] = {\n");
+//    for (NSInteger i=0; i<_itemsArr.count; i++) {
+//        
+//        UITextField *textFiled = _itemsArr[i];
+//        
+//        if (textFiled.text.length>0) {
+//            
+//            p[i] = textFiled.text.floatValue;
+//            
+//            NSLog(@"像素 === %f",p[i]);
+//            
+//        }else{
+//            
+//            p[i] = 0.0f;
+//        }
+//        
+//        
+//        
+//        if (i==19) {
+//            
+//            printf(" %.2f",p[i]);
+//        }else{
+//            printf(" %.2f,",p[i]);
+//        }
+//        
+//        if ((i+1)%5==0) {
+//            if (i!=19) {
+//                printf("\n");
+//                
+//            }else{
+//                
+//            }
+//            
+//        }
+//        
+//    }
+//    printf("\n};");
+//    
     //    [manager clear];
     
     
 }
--(void) textFieldDidBeginEditing:(UITextField *)textField
-{
-    
-    self.view.frame = CGRectMake(0, -_row11.frame.size.height * 7, self.view.frame.size.width, self.view.frame.size.height);
-    
 
-}
-
-/**
- 结束编辑UITextField的方法，让原来的界面还原高度
- */
--(void) textFieldDidEndEditing:(UITextField *)textField
-{
-    
-    self.view.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
-    
-}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -189,15 +281,6 @@
 }
 
 
--(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
-    
-    for (UITextField *field in _itemsArr) {
-        
-        [field resignFirstResponder];
-        
-    }
-    
-}
 
 
 

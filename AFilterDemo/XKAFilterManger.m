@@ -97,12 +97,8 @@ static unsigned char *RequestImagePixelData(UIImage * inImage){
 //获得以像素为单位的长和宽，开始处理位图中每个像素的值，生成指定效果
 - (UIImage *)createImageWithImagePi:(UIImage *)inImage andColorMatrix:(const float *)f{
     
-    
     /*        图片位图像素值数组         */
     unsigned char *imgPixel = RequestImagePixelData(inImage);
-    
-    
-    
     CGImageRef inImageRef = [inImage CGImage];
     long w = CGImageGetWidth(inImageRef);
     long h = CGImageGetHeight(inImageRef);
